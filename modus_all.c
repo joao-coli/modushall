@@ -85,7 +85,7 @@ void *randomIncrementer(){
         srand(time(NULL)); 
         int r = rand() % 5;  
 	
-        if(fator % 2){
+        if(r % 2){
             _heathensCounter += r;
             printf("Chegaram mais %d Heathens.\n",r);
         } else {

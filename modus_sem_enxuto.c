@@ -128,7 +128,8 @@ int main() {
             if(i < nPrudes) pthread_create(&_tidPrudes[i], NULL, &prudes, NULL);
         }
         
-        for(int i = 0; i < nPrudes; i++) {
+        //Aguarda todos serem executados
+        for(int i = 0; i < nHeathens; i++) {
             pthread_join(_tidHeathens[i], NULL);
             if(i < nPrudes) pthread_join(_tidPrudes[i], NULL);
          }
@@ -140,6 +141,7 @@ int main() {
             if(i < nHeathens) pthread_create(&_tidHeathens[i], NULL, &heathens, NULL);
          }
          
+         //Aguarda todos serem executados
          for(int i = 0; i < nPrudes; i++) {
             pthread_join(_tidPrudes[i], NULL);
             if(i < nHeathens) pthread_join(_tidHeathens[i], NULL);

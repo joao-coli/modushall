@@ -22,56 +22,9 @@ pthread_mutex_t _mutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t _heathenTurn;
 sem_t _prudesTurn;
 
-
-//Executem o ./script.sh pra fazer os testes
-//Erro no turn. se quando os dois são zero e ainda tem thread pra entrar
-//Se post nos dois turns, está dando erro dos dois entrarem pelo wait, portanto, assim que o mutex
-//estiver 1, o lado oposto avança independente da quantidade de cada lado.
-//COMO RESOLVER??!!!
-
-//Novas funções (Luid)
-//Mantive as antigas abaixo, porque não sei se isso está certo.
-void *heathens(){
-  //lógica tomada: cada thread é uma "pessoa", ou seja, 
-  //quando a thread é chamada significa que uma pessoa chegou, 
-  //logo, a incrementação independe se é a vez dele ou não
-
-    //  printf("\n+1 HEATENS\n");
-    _heathensCounter++;
-
-    sem_wait(&_heathenTurn);
-    
-    pthread_mutex_lock(&_mutex);
-
-
-    _heathensCounter--;
-    printf("HEATHENS PASSOU\nFaltam %d Prudes\t\te\t%d Heathens\n", _prudesCounter, _heathensCounter);
-
-    if(_prudesCounter > _heathensCounter){
-        sem_post(&_prudesTurn);
-        printf("[%d] > [%d] ", _prudesCounter, _heathensCounter);
-        printf("\n[Mais Prudes. Mudando a vez para Prudes]\n\n");
-        // _status = PRUDES_RULE;
-    } else {
-        if(_heathensCounter){
-          sem_post(&_heathenTurn);           
-        }else{
-           printf("\n[Acabou os Heathens. Mudando a vez para Prudes]\n\n");
-            // _status = NEUTRAL;
-            //sem_post(&_heathenTurn);
-            sem_post(&_prudesTurn);
-        }
-    }
-
-
-    pthread_mutex_unlock(&_mutex);
-    pthread_exit(0);
-
-}
-
 void *allHeathens(){
     
-    while(1) {
+    while(1) { //A todo momento, já que os valores são sempre incrementados
 
     sleep(1);
     sem_wait(&_heathenTurn);
@@ -99,7 +52,7 @@ void *allHeathens(){
 
 void *allPrudes(){
 
-    while(1) {
+    while(1) { //A todo momento, já que os valores são sempre incrementados
 
     sleep(1);
     sem_wait(&_prudesTurn);
@@ -125,53 +78,11 @@ void *allPrudes(){
     
 }
 
-void *prudes(){
-    sleep(1);
-    _prudesCounter++;
-    // printf("\n+1 PRUDE\n");
-
-    sem_wait(&_prudesTurn);
-
-    pthread_mutex_lock(&_mutex);
-
-    
-    // printf("PRUDES PASSANDO\nFaltam %d Prudes\t\te\t%d Heathens\n", _prudesCounter, _heathensCounter);
-
-
-    _prudesCounter--;
-    printf("PRUDES PASSOU\nFaltam %d Prudes\t\te\t%d Heathens\n", _prudesCounter, _heathensCounter);
-    
-    
-    if(_heathensCounter > _prudesCounter){        
-        sem_post(&_heathenTurn);
-        printf("[%d] > [%d] \n", _heathensCounter,_prudesCounter);
-        printf("\n[Mais Heathens. Mudando a vez para Heathens]\n\n");
-        // _status = HEATHENS_RULE;
-    } else{
-        if(_prudesCounter){
-           sem_post(&_prudesTurn);
-        }else{
-           printf("\n[Acabou os Prudes. Mudando a vez para Heathens]\n\n");
-            // _status = NEUTRAL;
-            sem_post(&_heathenTurn);
-            //sem_post(&_prudesTurn);
-        } 
-    }
-
-
-    pthread_mutex_unlock(&_mutex);
-    pthread_exit(0);
-    
-
-}
-
 void *randomIncrementer(){
     while(1){
-        sleep(3);
+        sleep(4);
         pthread_mutex_lock(&_mutex);
         srand(time(NULL)); 
-        int fator = rand() % 198 + 2;
-        usleep(fator*1000);
         int r = rand() % 5;  
 	
         if(fator % 2){
@@ -234,7 +145,8 @@ int main()
   
   pthread_create(&_tidRandomIncrementer, NULL, 	&randomIncrementer, NULL);  
 
-  while(1);
+  pthread_join(_tidHeathens, NULL);
+  pthread_join(_tidPrudes, NULL);
   
   printf("\nTerminou\n");
    
